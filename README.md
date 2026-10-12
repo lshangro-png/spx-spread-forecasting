@@ -89,3 +89,7 @@ jupyter lab notebooks/spx_spread_forecasting.ipynb
 A full run of the notebook takes about 20 minutes on a laptop; Sections 0–11 (the main results) take about
 3 minutes. Each script runs from the `scripts/` folder, for example `cd scripts && python hmm_ablation.py`.
 Random seeds are fixed, so results are reproducible.
+
+## License
+
+The code is released under the [MIT License](LICENSE). The Bloomberg data is not covered and is not distributed.
