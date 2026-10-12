@@ -8,7 +8,8 @@ sample on 27 years of Bloomberg data.
 a linear model on the log spread with long-memory (HAR) features works best, and HMM regimes are a useful risk
 flag but add no forecasting value once look-ahead bias is removed.
 
-Final project for MATH 628, by Shangrong Li, Siyu Liang and Wenyi Ye.
+Final project for MATH 628, by Shangrong Li, Siyu Liang and Wenyi Ye. Full write-up: [report](reports/report.md)
+([中文翻译](reports/report_zh.md)).
 
 ## Key results
 
@@ -36,15 +37,15 @@ Final project for MATH 628, by Shangrong Li, Siyu Liang and Wenyi Ye.
 - The index bid/ask level jumps about 6× in June 2011 and about 4× in December 2016, each within one month. This looks
   like a methodology change rather than a change in liquidity, and results are reported by sub-period.
 
-### Why an earlier version reported R² ≈ 0.89
+### Avoiding look-ahead bias
 
-The first version of this analysis leaked future information:
+Three common shortcuts leak future information and together inflate out-of-sample R² to about 0.89:
 
-1. HMM probabilities came from the forward–backward smoother (`predict_proba`) on days inside the training window.
-2. Outliers were removed with full-sample percentiles before the lag features were built.
-3. Gaps were filled with two-sided interpolation.
+1. HMM probabilities from the forward–backward smoother (`predict_proba`) on days inside the training window.
+2. Outlier removal with full-sample percentiles before the lag features are built.
+3. Gap filling with two-sided interpolation.
 
-The notebook fixes all three: probabilities are forward-filtered from models fitted on earlier data only, outlier
+The notebook avoids all three: probabilities are forward-filtered from models fitted on earlier data only, outlier
 thresholds use past data only, and gaps are forward-filled.
 
 ## Repository layout
@@ -58,14 +59,11 @@ scripts/                                 stand-alone reproductions of the robust
   interval_forecasts.py                  Section 13: HMM vs EWMA for 90% forecast intervals
   extensions.py                          Section 14: HAR / calendar features, spike classification
 reports/
-  report_zh.md                           project report (Chinese)
-  Math628_Final_Report.pdf               original course report
+  report.md                              project report
+  report_zh.md                           Chinese translation of the report
+  figures/                               report figures
 data/                                    put data.csv here (not included, see below)
 ```
-
-The project report (in Chinese) is [`reports/report_zh.md`](reports/report_zh.md). The PDF in
-`reports/` is the original submission; its headline numbers (R² ≈ 0.89) are superseded by the
-notebook, for the reasons above.
 
 ## Data
 
