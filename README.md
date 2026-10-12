@@ -57,11 +57,14 @@ scripts/                                 stand-alone reproductions of the robust
   hmm_variants.py                        Section 12b: three redesigned HMMs
   interval_forecasts.py                  Section 13: HMM vs EWMA for 90% forecast intervals
   extensions.py                          Section 14: HAR / calendar features, spike classification
-reports/                                 original course report (PDF)
+reports/
+  revised_report_zh.md                   revised report in Chinese (results of this repository)
+  Math628_Final_Report.pdf               original course report
 data/                                    put data.csv here (not included, see below)
 ```
 
-The PDF in `reports/` is the original submission; its headline numbers (R² ≈ 0.89) are superseded by the
+A revised write-up in Chinese is in [`reports/revised_report_zh.md`](reports/revised_report_zh.md). The PDF in
+`reports/` is the original submission; its headline numbers (R² ≈ 0.89) are superseded by the
 notebook, for the reasons above.
 
 ## Data
