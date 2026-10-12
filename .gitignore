@@ -1,0 +1,15 @@
+# Bloomberg data cannot be redistributed
+data/*.csv
+data/*.xlsx
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
