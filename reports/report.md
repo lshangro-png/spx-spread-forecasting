@@ -257,4 +257,4 @@ Future work, in order of expected value:
 
 ## Reproducibility
 
-All results come from [`notebooks/spx_spread_forecasting.ipynb`](../notebooks/spx_spread_forecasting.ipynb), which runs end to end with fixed random seeds. Figures for the regime timeline, rolling RMSE, residual diagnostics, SHAP, ROC and calibration are in its Sections 4, 7, 9, 10 and 14.
+All results come from the three notebooks in [`notebooks/`](../notebooks/), run in order with fixed random seeds; they pass data through a local SQLite database. The regime timeline is in notebook 1, the SHAP plots in notebook 2, and the rolling RMSE, residual diagnostics, ROC and calibration figures in notebook 3.

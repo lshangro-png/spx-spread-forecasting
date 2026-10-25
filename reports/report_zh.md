@@ -257,4 +257,4 @@ SPX 日度价差具有中等的可预测性（样本外 R² 0.36，MSE 比持久
 
 ## 复现
 
-所有结果均来自 [`notebooks/spx_spread_forecasting.ipynb`](../notebooks/spx_spread_forecasting.ipynb)，该 notebook 固定了随机种子，可从头到尾完整运行。Regime 时间线、滚动 RMSE、残差诊断、SHAP、ROC 和校准曲线等图表分别在其第 4、7、9、10 和 14 节。
+所有结果均来自 [`notebooks/`](../notebooks/) 中的三个 notebook，按顺序运行，随机种子固定；它们之间通过本地 SQLite 数据库传递数据。Regime 时间线在 notebook 1，SHAP 图在 notebook 2，滚动 RMSE、残差诊断、ROC 和校准曲线在 notebook 3。

@@ -36,23 +36,21 @@ MATH 628 课程期末项目，作者 Shangrong Li、Siyu Liang、Wenyi Ye。完�
 2. 在构建滞后特征之前，按全样本分位数删除异常值。
 3. 用双向插值填补缺口。
 
-本项目的 notebook 避开了这三点：概率由只用更早数据拟合的模型做前向滤波得到，异常值阈值只用过去的数据，缺口只用前向填充。
+本项目的 notebook 都避开了这三点：概率由只用更早数据拟合的模型做前向滤波得到，异常值阈值只用过去的数据，缺口只用前向填充。
 
 ## 仓库结构
 
 ```
-notebooks/spx_spread_forecasting.ipynb   完整分析，已执行，包含所有图表
-scripts/                                 稳健性实验的独立复现脚本
-  _nbload.py                             加载 notebook 的流程（数据、特征、HMM、CV 函数）
-  hmm_ablation.py                        第 12a 节：有无 HMM 特征的对比
-  hmm_variants.py                        第 12b 节：三种重新设计的 HMM
-  interval_forecasts.py                  第 13 节：90% 预测区间，HMM vs EWMA
-  extensions.py                          第 14 节：HAR / 日历特征、尖峰分类
+notebooks/
+  01_data_and_regimes.ipynb              清洗数据、构建特征、拟合滚动 HMM      -> features 表
+  02_forecasting.ipynb                   所有滚动预测和尖峰分类器               -> predictions、cv_windows、
+                                                                                  spike_predictions、shap_importance 表
+  03_evaluation.ipynb                    报告中的所有表格和图，只从数据库读取
 reports/
   report.md                              项目报告（英文）
   report_zh.md                           报告的中文翻译
   figures/                               报告中的图
-data/                                    把 data.csv 放在这里（未包含，见下文）
+data/                                    data.csv 和项目数据库 spx.db（都不包含，见下文）
 ```
 
 ## 数据
@@ -71,10 +69,10 @@ Dates, PX_LAST, CUR_MKT_CAP, PX_BID, PX_ASK, PX_MID, CHG_PCT_1D, BEST_EPS, PX_VO
 
 ```bash
 pip install -r requirements.txt
-jupyter lab notebooks/spx_spread_forecasting.ipynb
+jupyter lab notebooks/
 ```
 
-在笔记本电脑上完整运行 notebook 约需 20 分钟；第 0–11 节（主要结果）约需 3 分钟。各脚本在 `scripts/` 目录下运行，例如 `cd scripts && python hmm_ablation.py`。随机种子已固定，结果可复现。
+按顺序运行三个 notebook。它们之间通过本地 SQLite 数据库 `data/spx.db` 传递数据：notebook 1 创建数据库（约 2 分钟），notebook 2 写入预测结果（约 20 分钟），notebook 3 只读取数据库（约 1 分钟），因此重跑评估时不需要重新训练模型。随机种子已固定，结果可复现。
 
 ## 许可证
 

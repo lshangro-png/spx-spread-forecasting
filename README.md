@@ -47,24 +47,22 @@ Three common shortcuts leak future information and together inflate out-of-sampl
 2. Outlier removal with full-sample percentiles before the lag features are built.
 3. Gap filling with two-sided interpolation.
 
-The notebook avoids all three: probabilities are forward-filtered from models fitted on earlier data only, outlier
+The notebooks avoid all three: probabilities are forward-filtered from models fitted on earlier data only, outlier
 thresholds use past data only, and gaps are forward-filled.
 
 ## Repository layout
 
 ```
-notebooks/spx_spread_forecasting.ipynb   full analysis, executed, with all figures and tables
-scripts/                                 stand-alone reproductions of the robustness experiments
-  _nbload.py                             loads the notebook's pipeline (data, features, HMM, CV helpers)
-  hmm_ablation.py                        Section 12a: with vs without the HMM feature
-  hmm_variants.py                        Section 12b: three redesigned HMMs
-  interval_forecasts.py                  Section 13: HMM vs EWMA for 90% forecast intervals
-  extensions.py                          Section 14: HAR / calendar features, spike classification
+notebooks/
+  01_data_and_regimes.ipynb              clean data, build features, fit rolling HMMs  -> table features
+  02_forecasting.ipynb                   every rolling forecast and spike classifier   -> predictions, cv_windows,
+                                                                                          spike_predictions, shap_importance
+  03_evaluation.ipynb                    every table and figure in the report, read from the database
 reports/
   report.md                              project report
   report_zh.md                           Chinese translation of the report
   figures/                               report figures
-data/                                    put data.csv here (not included, see below)
+data/                                    data.csv and the project database spx.db (neither included, see below)
 ```
 
 ## Data
@@ -86,12 +84,13 @@ Python 3.11+ is recommended.
 
 ```bash
 pip install -r requirements.txt
-jupyter lab notebooks/spx_spread_forecasting.ipynb
+jupyter lab notebooks/
 ```
 
-A full run of the notebook takes about 20 minutes on a laptop; Sections 0–11 (the main results) take about
-3 minutes. Each script runs from the `scripts/` folder, for example `cd scripts && python hmm_ablation.py`.
-Random seeds are fixed, so results are reproducible.
+Run the three notebooks in order. They pass data through a local SQLite database, `data/spx.db`: notebook 1
+creates it (about 2 minutes), notebook 2 adds the forecasts (about 20 minutes), and notebook 3 only reads from it
+(about 1 minute), so the evaluation can be re-run without refitting any model. Random seeds are fixed, so results
+are reproducible.
 
 ## License
 

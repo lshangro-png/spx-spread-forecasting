@@ -1,5 +1,6 @@
 # Bloomberg data cannot be redistributed
 data/*.csv
+data/*.db
 data/*.xlsx
 
 # Python / Jupyter
