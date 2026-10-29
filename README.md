@@ -32,12 +32,17 @@ Final project for MATH 628, by Shangrong Li, Siyu Liang and Wenyi Ye. Full write
 - **Spike forecasting** (spread above its past-year 90th percentile) reaches AUC 0.84, but a one-variable naive
   rule already gets 0.83.
 - **Gradient boosting** overfits more than the linear model and does not beat it.
+- **Robust across data regimes.** Tested separately in each of the three quote eras (see below), the linear model beats
+  boosting, HAR terms help, and the HMM adds nothing, in every era. Under absolute log error, Linear + HAR alone forms the
+  90% Model Confidence Set over the full sample.
 
 ### Data issues worth knowing about
 
 - Bloomberg fills exchange holidays with a verbatim copy of the previous day (256 rows); these are removed.
-- The index bid/ask level jumps about 6× in June 2011 and about 4× in December 2016, each within one month. This looks
-  like a methodology change rather than a change in liquidity, and results are reported by sub-period.
+- The index bid/ask level jumps about 6× on 1 June 2011 and about 4× on 5 December 2016, almost entirely on the first
+  day. In December 2016 volatility, returns and volume do not move at all, and in June 2011 the quote switched from
+  one-sided to symmetric, so both look like changes in the data definition rather than in liquidity. The index quote is a
+  vendor composite, not a tradable price, so its level is not a transaction cost.
 
 ### Avoiding look-ahead bias
 
@@ -58,6 +63,7 @@ notebooks/
   02_forecasting.ipynb                   every rolling forecast and spike classifier   -> predictions, cv_windows,
                                                                                           spike_predictions, shap_importance
   03_evaluation.ipynb                    every table and figure in the report, read from the database
+  04_robustness.ipynb                    break tests, results by quote era, bootstrap CIs, Model Confidence Set
 reports/
   report.md                              project report
   report_zh.md                           Chinese translation of the report
@@ -87,9 +93,9 @@ pip install -r requirements.txt
 jupyter lab notebooks/
 ```
 
-Run the three notebooks in order. They pass data through a local SQLite database, `data/spx.db`: notebook 1
-creates it (about 2 minutes), notebook 2 adds the forecasts (about 20 minutes), and notebook 3 only reads from it
-(about 1 minute), so the evaluation can be re-run without refitting any model. Random seeds are fixed, so results
+Run the four notebooks in order. They pass data through a local SQLite database, `data/spx.db`: notebook 1
+creates it (about 2 minutes), notebook 2 adds the forecasts (about 20 minutes), and notebooks 3 and 4 only read from it
+(about 1 minute each), so the evaluation can be re-run without refitting any model. Random seeds are fixed, so results
 are reproducible.
 
 ## License

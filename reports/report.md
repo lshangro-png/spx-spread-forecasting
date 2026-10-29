@@ -8,7 +8,7 @@
 
 Once look-ahead bias is removed, daily S&P 500 relative bid-ask spreads are only moderately predictable: the best model, a linear regression on the log spread, reaches an out-of-sample R² of 0.36 and a mean squared error 28% below the persistence forecast (tomorrow = today). We study 6,972 Bloomberg trading days (1998–2025) with a fully out-of-sample design: a rolling Hidden Markov Model (HMM) whose regime probabilities are computed by forward filtering, and rolling-window linear, XGBoost and LightGBM forecasts compared with Diebold–Mariano tests.
 
-Three findings stand out. First, gradient boosting does not beat the linear model, and adding HAR-style long-memory features (5/22/63-day average log spread) is the only change that significantly improves accuracy (typical-day absolute log error 0.210 → 0.193, p < 0.001). Second, the HMM identifies persistent regimes in which forecast errors are about eight times larger, but its probabilities add no predictive value for point forecasts, spike classification or interval forecasts once simpler signals are available. Third, two data issues matter more than any modelling choice: vendor-filled holiday rows, and two methodology-like level shifts in the index quote (June 2011, December 2016). Using smoothed in-sample regime probabilities and full-sample outlier filtering would inflate the out-of-sample R² to about 0.89; we show how.
+Three findings stand out. First, gradient boosting does not beat the linear model, and adding HAR-style long-memory features (5/22/63-day average log spread) is the only change that significantly improves accuracy (typical-day absolute log error 0.210 → 0.193, p < 0.001). Second, the HMM identifies persistent regimes in which forecast errors are about eight times larger, but its probabilities add no predictive value for point forecasts, spike classification or interval forecasts once simpler signals are available. Third, two data issues matter more than any modelling choice: vendor-filled holiday rows, and two methodology-like level shifts in the index quote (June 2011, December 2016). Tests at the break dates point to definition changes, yet every main conclusion holds separately in each of the three quote eras. Using smoothed in-sample regime probabilities and full-sample outlier filtering would inflate the out-of-sample R² to about 0.89; we show how.
 
 ## 1 Introduction
 
@@ -20,12 +20,13 @@ We ask whether market regimes help forecast the daily SPX bid-ask spread, and fi
 2. Do non-linear learners (XGBoost, LightGBM) improve on a linear model?
 3. Do regime probabilities from a rolling HMM add predictive value for point forecasts, spike forecasts or forecast intervals?
 4. Which simple, economically motivated features (long-memory averages, calendar effects) improve accuracy?
+5. Do the conclusions survive changes in how the spread series is defined?
 
 ### 1.2 Contributions
 
 - **A leak-free evaluation design.** Every feature and every regime probability uses only information available before the forecast day; we show that a smoothed, in-window HMM inflates out-of-sample R² from about 0.36 to 0.89.
 - **A negative result for regime features, tested from several angles:** an ablation, three redesigned HMMs, and interval and spike-forecast tasks.
-- **Data diagnostics** for the Bloomberg index quote that any study using this series should account for.
+- **Data diagnostics** for the Bloomberg index quote, including tests showing that its two level shifts behave like changes in the data definition, and a check that every main conclusion holds within each quote era.
 - **Positive results** for log-space modelling and HAR long-memory features, and in-sample evidence of holiday and option-expiry effects.
 
 ## 2 Data
@@ -40,7 +41,7 @@ Bloomberg fills exchange holidays (Christmas, New Year, Thanksgiving and others)
 
 ![Annual median SPX relative spread](figures/spread_by_year.png)
 
-The median spread jumps 6.3-fold in June 2011 and 3.6-fold in December 2016, each within a single month. SPX liquidity did not deteriorate like that, so these steps most likely reflect changes in how the vendor computes the index bid and ask; the index quote is a composite, not a tradable price. The shifts shape every later result: errors after December 2016 are about 25 times larger than before, and the HMM partly separates these eras rather than market-stress regimes. We therefore report sub-period results throughout.
+The median spread jumps 6.3-fold in June 2011 and 3.6-fold in December 2016, each within a single month. SPX liquidity did not deteriorate like that, so these steps most likely reflect changes in how the vendor computes the index bid and ask; the index quote is a composite, not a tradable price. The shifts shape every later result: errors after December 2016 are about 25 times larger than before, and the HMM partly separates these eras rather than market-stress regimes. We therefore report sub-period results throughout, and Section 4.8 tests the breaks directly.
 
 ### 2.3 Outliers
 
@@ -200,6 +201,34 @@ The full logistic model beats the version without HAR and calendar terms (AUC +0
 
 We tested a timing rule: trade on day t only if its forecast spread is below the median forecast of the previous 60 days. It lowers the average cost, relative to each 21-day block's mean spread, by about 2% (linear 2.0%, XGBoost 2.3%). A persistence forecast achieves 2.3%, against 13.8% for perfect foresight. The models forecast the spread level well but rank nearby days poorly, so their timing value is small. Comparing cumulative actual and predicted spreads carries no information, because any unbiased forecast tracks the cumulative actual spread.
 
+### 4.8 Robustness across quote eras
+
+**The two jumps look like changes in the data definition.** Both are abrupt: 90% (1 June 2011) and 100% (5 December 2016) of the level shift happens on the first day, and the new level holds. In December 2016 nothing else moves. Over the 20 days around the break, the shift in log spread ranks in the top 1.3% of all dates, while the shifts in volatility, absolute return and volume are ordinary (30th, 2nd and 59th percentiles). June 2011 is less clean, because volatility also rose that month (90th percentile). The quote's structure changed at the same time, however: before June 2011 the ask sat almost on the last price (0.003% above it, against 0.033% for the bid); afterwards the quote is symmetric (0.12% and 0.11%). A liquidity shock widens both sides of the quote; it does not change how the quote is built. We treat both breaks as definition changes, the 2011 one with less certainty.
+
+**The main conclusions hold in every era.** We split the forecast days at the two break dates into era A (2003 to May 2011, 2,059 days), B (June 2011 to November 2016, 1,366 days) and C (December 2016 to 2025, 2,228 days), leaving out the first 21 trading days after each break. Each conclusion is then tested separately in each era; ✓ means it holds at the 5% level.
+
+| Conclusion (absolute log error unless stated) | Era A | Era B | Era C |
+| --- | --- | --- | --- |
+| Linear model beats XGBoost and LightGBM | ✓ | ✓ | ✓ |
+| HAR terms improve the linear model (Δ mean abs. log error) | ✓ −0.013 | ✓ −0.024 | ✓ −0.015 |
+| Linear + HAR beats persistence (skill) | ✓ 0.14 | ✓ 0.19 | ✓ 0.08 (p = 0.03) |
+| HMM probability adds no significant gain | ✓ (p = 0.05) | ✓ | ✓ |
+| EWMA intervals beat HMM intervals (interval score) | ✓ | same sign, p = 0.11 | ✓ |
+| Spike model no better than the naive rule (AUC) | ✗ +0.035 | ✓ | ✓ |
+
+Only two cells fail. The EWMA advantage in era B has the right sign but is not significant. In era A the spike classifier does beat the naive rule, by 0.035 AUC (95% CI 0.017 to 0.071).
+
+**Robust inference.** Under squared error, inference is very weak. The 95% block-bootstrap interval for the linear model's skill over persistence runs from −0.40 to 0.48, because a few spike days decide the result. Under absolute log error the same comparisons are tight:
+
+| Effect (absolute log error) | Estimate | 95% CI |
+| --- | --- | --- |
+| Skill of Linear + HAR vs persistence | 0.123 | 0.082 to 0.158 |
+| HAR terms (Δ mean abs. log error) | −0.017 | −0.022 to −0.012 |
+| Linear − XGBoost | −0.023 | −0.033 to −0.015 |
+| With HMM − without HMM | +0.0003 | −0.0010 to 0.0017 |
+
+The 90% Model Confidence Set (MCS; Hansen, Lunde & Nason, 2011) agrees. Under absolute log error, Linear + HAR alone forms the set over the full sample and in era B. In era C the set is {persistence, linear, linear + HAR}. In era A every model is borderline (all p-values 0.107). Under squared error the MCS cannot separate the models except in era B.
+
 ## 5 Discussion
 
 ### 5.1 How leakage inflates R² to 0.89
@@ -222,17 +251,21 @@ The regime remains useful descriptively. It flags periods when forecasts are abo
 
 Predictable variation is carried by smooth, near-linear persistence in the log spread: the two lags alone account for most of the SHAP mass. Each training window has only about 450 non-outlier days, and the series shifts level between eras. Trees spend capacity on noise in that setting, as their 3–5 times larger train–validation gaps show.
 
-### 5.4 Limitations
+### 5.4 What the index spread measures
 
-- **Instrument.** The SPX bid and ask are a vendor composite, not a tradable quote, and the level shifts suggest methodology changes. Results may not carry over to traded instruments.
-- **Breaks.** We report sub-periods but do not model the breaks; a post-2017 sample is shorter and dominated by COVID-19.
+The S&P 500 index itself cannot be traded, so its bid and ask are not prices anyone can deal at. They are a composite computed by the vendor; we do not know the exact construction, but the abrupt level shifts show that it changed at least twice. Two consequences follow. First, the level of this spread is not a transaction cost, and its 34-fold rise between 2010 and 2017 says nothing about SPX liquidity. Second, what can be learnt is the predictability of the series: its persistence, its long memory and its response to volatility. Those properties held across all three definitions, which suggests they come from market behaviour rather than from one construction. Whether they carry over to a tradable spread, such as SPY or E-mini futures quotes, has to be tested on that instrument.
+
+### 5.5 Limitations
+
+- **Instrument.** The SPX bid and ask are a vendor composite, not a tradable quote (Section 5.4).
+- **Breaks.** The break tests are indirect evidence; only the vendor's documentation can confirm a definition change. We evaluate within eras but do not model the breaks themselves.
 - **Event dummy.** The COVID-19 dummy's end date (December 2022) was only known after the fact, a mild look-ahead.
 - **Inputs.** We omit VIX, order-book depth and intraday data, all known drivers of spreads.
 - **Weak tests.** Squared-error DM tests are dominated by spike days; several point-forecast differences of practical size are not statistically significant.
 
 ## 6 Conclusion and future work
 
-Daily SPX spreads are moderately predictable (out-of-sample R² 0.36, MSE 28% below persistence), and simple models do it best. A linear regression on the log spread with HAR long-memory terms is the recommended specification. Gradient boosting adds overfitting rather than accuracy. Hidden Markov regimes are a useful descriptive and risk-flag tool but add no forecasting value once look-ahead bias is removed. The largest single effect on the conclusions came from data handling: vendor-filled holidays, level shifts in the index quote, and leakage through smoothed regime probabilities and full-sample filtering.
+Daily SPX spreads are moderately predictable (out-of-sample R² 0.36, MSE 28% below persistence), and simple models do it best. A linear regression on the log spread with HAR long-memory terms is the recommended specification. Gradient boosting adds overfitting rather than accuracy. Hidden Markov regimes are a useful descriptive and risk-flag tool but add no forecasting value once look-ahead bias is removed. These conclusions hold within each of the three quote eras, so they do not depend on one definition of the series. The largest single effect on the conclusions came from data handling: vendor-filled holidays, level shifts in the index quote, and leakage through smoothed regime probabilities and full-sample filtering.
 
 Future work, in order of expected value:
 
@@ -254,7 +287,8 @@ Future work, in order of expected value:
 8. Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction, and estimation. *Journal of the American Statistical Association*, 102(477), 359–378.
 9. Amihud, Y. (2002). Illiquidity and stock returns: cross-section and time-series effects. *Journal of Financial Markets*, 5(1), 31–56.
 10. Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. *Econometrica*, 57(2), 357–384.
+11. Hansen, P. R., Lunde, A., & Nason, J. M. (2011). The model confidence set. *Econometrica*, 79(2), 453–497.
 
 ## Reproducibility
 
-All results come from the three notebooks in [`notebooks/`](../notebooks/), run in order with fixed random seeds; they pass data through a local SQLite database. The regime timeline is in notebook 1, the SHAP plots in notebook 2, and the rolling RMSE, residual diagnostics, ROC and calibration figures in notebook 3.
+All results come from the four notebooks in [`notebooks/`](../notebooks/), run in order with fixed random seeds; they pass data through a local SQLite database. The regime timeline is in notebook 1, the SHAP plots in notebook 2, the rolling RMSE, residual diagnostics, ROC and calibration figures in notebook 3, and the break tests, era results and MCS in notebook 4.
