@@ -98,10 +98,6 @@ creates it (about 2 minutes), notebook 2 adds the forecasts (about 20 minutes), 
 (about 1 minute each), so the evaluation can be re-run without refitting any model. Random seeds are fixed, so results
 are reproducible.
 
-## Authors
-
-Shangrong Li, Siyu Liang and Wenyi Ye contributed equally to this project.
-
 ## License
 
 The code is released under the [MIT License](LICENSE). The Bloomberg data is not covered and is not distributed.
