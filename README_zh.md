@@ -76,6 +76,10 @@ jupyter lab notebooks/
 
 按顺序运行四个 notebook。它们之间通过本地 SQLite 数据库 `data/spx.db` 传递数据：notebook 1 创建数据库（约 2 分钟），notebook 2 写入预测结果（约 20 分钟），notebook 3 和 4 只读取数据库（各约 1 分钟），因此重跑评估时不需要重新训练模型。随机种子已固定，结果可复现。
 
+## 作者
+
+Shangrong Li、Siyu Liang、Wenyi Ye 对本项目贡献均等。
+
 ## 许可证
 
 代码采用 [MIT 许可证](LICENSE)。Bloomberg 数据不在许可范围内，也不随仓库分发。
